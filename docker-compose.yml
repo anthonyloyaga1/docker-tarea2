@@ -1,0 +1,45 @@
+services:
+  nc:
+    image: nextcloud:31.0-apache
+    restart: always
+    ports:
+      - 80:80
+    volumes:
+      - nc_data:/var/www/html
+    networks:
+      - dmqredisnet
+      - dmqdbnet
+    environment:
+      - REDIS_HOST=redis
+      - MYSQL_HOST=db
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nxc_admin
+      - MYSQL_PASSWORD=Nxc_Adm001
+  redis:
+    image: redis:8.2-alpine
+    restart: always
+    networks:
+      - dmqredisnet
+    expose:
+      - 6379
+  db:
+    image: mariadb:11.4
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    restart: always
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - dmqdbnet
+    environment:
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nxc_admin
+      - MYSQL_ROOT_PASSWORD=nextcloud
+      - MYSQL_PASSWORD=Nxc_Adm001
+    expose:
+      - 3306
+volumes:
+  db_data:
+  nc_data:
+networks:
+  dmqdbnet:
+  dmqredisnet:
